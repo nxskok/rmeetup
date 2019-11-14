@@ -4,7 +4,7 @@ author: "Ken Butler\nDepartment of Computer and Mathematical Sciences\nUTSC (Sca
 output: beamer_presentation
 ---
 
-## packages
+## Packages
 
 ```{r}
 library(tidyverse)
@@ -26,14 +26,55 @@ pig feed1 feed2 feed3 feed4
 
 Say we want graphs of weight gain for each feed.
 
-## Read in and try
+## Read in:
+
 
 ```{r}
-pigs <- read_table(pigs1.txt)
+pigs <- read_table("pigs1.txt")
+pigs
 ```
 
 
-##
+## and then we have to do this 4 times...
+
+```{r}
+ggplot(pigs, aes(x=1, y=feed1)) + geom_boxplot()
+```
+
+## The problem
+
+- The data frame is the *wrong shape*.
+- Need all the weight gains in *one* column, with another column saying what feed that weight gain was from
+- Make data frame longer.
+- Old tools:
+  - `reshape`
+  - `reshape2`
+  - `gather` (from `tidyr`)
+- New tool: `pivot_longer`
+
+## On the pig feed data
+
+```{r}
+pigs
+pigs %>% pivot_longer(-pig, names_to="feed", 
+                      values_to="weight") -> pigs_longer
+```
+
+## The results
+
+```{r}
+pigs_longer
+```
+
+
+## Now we can make all 4 graphs at once
+
+```{r}
+ggplot(pigs_longer, aes(x=feed, y=weight)) + geom_boxplot()
+```
+
+
+## another example
 
 this one:
 
@@ -49,7 +90,7 @@ one where I use .value
 summarize with list, eg the exam one
 reformat the data so I have to process it first
 
-
+pivot_wider, eg five-number summary of something (the rock-drilling data)
 
 
 
