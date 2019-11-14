@@ -13,17 +13,27 @@ library(tidyverse)
 
 ## Pig feed
 
-20 pigs are randomly assigned to one of four pig feeds, and the weight gain of each pig is measured
+20 pigs are randomly assigned to one of four pig feeds, and the weight gain of each pig is measured:
 
 ```
 pig feed1 feed2 feed3 feed4
-1    57.0  67.7  92.1  84.2
-2    65.0  74.0  90.2  83.1
-3    58.6  66.3  96.5  85.7
-4    60.8  68.7  92.6  87.9
-5    61.7  69.8  99.1  90.3
+ 1   60.8  68.7  92.6  87.9
+ 2   57.0  67.7  92.1  84.2
+ 3   65.0  74.0  90.2  83.1
+ 4   58.6  66.3  96.5  85.7
+ 5   61.7  69.8  99.1  90.3
 ```
 
+Say we want graphs of weight gain for each feed.
+
+## Read in and try
+
+```{r}
+pigs <- read_table(pigs1.txt)
+```
+
+
+##
 
 this one:
 
