@@ -1,10 +1,9 @@
 ---
 title: "From Longer and Wider, We Stand on Guard for Thee"
-author: Ken Butler |
-    | Department of Computer and Mathematical Sciences
-    | UTSC (Scarborough) 
-    | `butler@utsc.utoronto.ca`
-    | `@kenbutler12`
+author: "Ken Butler |
+    | Department of Computer and Mathematical Sciences, UTSC (Scarborough) 
+    | butler@utsc.utoronto.ca
+    | @kenbutler12"
 output: beamer_presentation
 ---
 
