@@ -1,6 +1,10 @@
 ---
 title: "From Longer and Wider, We Stand on Guard for Thee"
-author: "Ken Butler\nDepartment of Computer and Mathematical Sciences\nUTSC (Scarborough)"
+author: Ken Butler |
+    | Department of Computer and Mathematical Sciences
+    | UTSC (Scarborough) 
+    | `butler@utsc.utoronto.ca`
+    | `@kenbutler12`
 output: beamer_presentation
 ---
 
@@ -8,6 +12,7 @@ output: beamer_presentation
 
 ```{r}
 library(tidyverse)
+library(broom)
 ```
 
 
@@ -29,7 +34,7 @@ Say we want graphs of weight gain for each feed.
 ## Read in:
 
 
-```{r}
+```{r, message=F}
 pigs <- read_table("pigs1.txt")
 pigs
 ```
@@ -73,10 +78,20 @@ pigs_longer
 ggplot(pigs_longer, aes(x=feed, y=weight)) + geom_boxplot()
 ```
 
+## Making wider
 
-## another example
+`pivot_wider` is inverse of `pivot_longer`:
 
-this one:
+```{r}
+pigs_longer %>% 
+  pivot_wider(names_from=feed, values_from=weight)
+```
+
+we are back where we started.
+
+## Disease presence and absence at two locations
+
+Frequencies of plants observed with and without disease at two locations:
 
 ```
 Species     Disease present         Disease absent
@@ -85,16 +100,132 @@ A            44         12          38        10
 B            28         22          20        18
 ```
 
-one where I use .value
+This has two rows of headers, so I rewrote the data file:
 
-summarize with list, eg the exam one
-reformat the data so I have to process it first
+```
+Species  present_x present_y    absent_x  absent_y
+A            44         12          38        10
+B            28         22          20        18
+```
 
-pivot_wider, eg five-number summary of something (the rock-drilling data)
+Read into data frame called `prevalence`.
+
+## Gather
+
+```{r, echo=F, message=F}
+prevalence <- read_table("disease.txt")
+```
+
+needs to take two steps:
+
+```{r}
+prevalence %>% 
+  gather(disloc, freq, -Species) %>% 
+  separate(disloc, into=c("disease", "location"))
+```
 
 
+## Making longer, the new way
+
+Each column name encodes both disease and location, so put both of these in `names_to`:
+
+```{r}
+prevalence %>% 
+  pivot_longer(-Species, names_to=c("disease", "location"),
+               names_sep="_", values_to="frequency") %>% 
+  arrange(Species, location, disease) -> prevalence_longer
+prevalence_longer
+```
+
+## How do I make this wider?
+
+```{r}
+prevalence_longer %>% 
+  pivot_wider(names_from=c(disease, location), values_from=frequency)
+```
+
+## Interlude
+
+```{r}
+pigs_longer %>% 
+  group_by(feed) %>% 
+  summarize(weight_mean=mean(weight))
+```
+
+What if summary is more than one number, eg. quartiles?
+
+```{r, error=T}
+pigs_longer %>% 
+  group_by(feed) %>% 
+  summarize(r=quantile(weight, c(0.25, 0.75)))
+```
+
+## the right way to do it
+
+```{r}
+pigs_longer %>% 
+  group_by(feed) %>% 
+  summarize(r=list(quantile(weight, c(0.25, 0.75)))) %>% 
+  unnest(r)
+```
+
+## or even better, use `tidy` from `broom`:
+
+```{r}
+tidy(quantile(pigs_longer$weight, c(0.25, 0.75)))
+```
+
+and so
+
+```{r}
+pigs_longer %>% 
+  group_by(feed) %>% 
+  summarize(r=list(tidy(quantile(weight, c(0.25, 0.75))))) %>% 
+  unnest(r) %>% 
+  pivot_wider(names_from=names, values_from=x)
+```
 
 
+## A hairy one
+
+18 people receive one of three treatments. At 3 different times (pre, post, followup) two variables `y` and `z` are measured on each person:
+
+```{r, echo=F, message=F}
+repmes0 <- read_table2("repmes.txt")
+repmes0 %>% mutate(id=str_c(treatment, ".", rep)) %>% 
+  select(-rep) %>% 
+  select(id, everything()) -> repmes
+repmes
+```
+
+## Attempt 1
+
+
+```{r}
+repmes %>% pivot_longer(contains("_"),
+                        names_to=c("time", "var"),
+                        names_sep="_"
+                         )
+```
+
+## Attempt 2
+
+```{r}
+repmes %>% pivot_longer(contains("_"),
+                        names_to=c("time", ".value"),
+                        names_sep="_"
+                        ) -> repmes3
+repmes3
+```
+
+## make a graph
+
+```{r}
+ggplot(repmes3, aes(x=fct_inorder(time), y=y, colour=treatment, group=id)) +
+  geom_point() + geom_line()
+```
+
+## thank you!
 
 
 
