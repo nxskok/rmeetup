@@ -1,10 +1,10 @@
 ---
 title: "From Longer and Wider, We Stand on Guard for Thee"
-author: "Ken Butler |
-    | Department of Computer and Mathematical Sciences, UTSC (Scarborough) 
-    | butler@utsc.utoronto.ca
-    | @kenbutler12"
-output: beamer_presentation
+author: Ken Butler, Department of Computer and Mathematical Sciences, UTSC (Scarborough),
+  butler@utsc.utoronto.ca, @kenbutler12
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
 ---
 
 ## Packages
@@ -64,10 +64,10 @@ pigs %>% pivot_longer(-pig, names_to="feed",
                       values_to="weight") -> pigs_longer
 ```
 
-## The results
+## The results (some)
 
 ```{r}
-pigs_longer
+pigs_longer %>% sample_n(10)
 ```
 
 
@@ -126,8 +126,6 @@ prevalence %>%
 
 ## Making longer, the new way
 
-Each column name encodes both disease and location, so put both of these in `names_to`:
-
 ```{r}
 prevalence %>% 
   pivot_longer(-Species, names_to=c("disease", "location"),
@@ -136,12 +134,18 @@ prevalence %>%
 prevalence_longer
 ```
 
-## How do I make this wider?
+## Making wider, different ways
 
 ```{r}
 prevalence_longer %>% 
-  pivot_wider(names_from=c(disease, location), values_from=frequency)
+  pivot_wider(names_from=c(Species, location), values_from=frequency)
 ```
+
+```{r}
+prevalence_longer %>% 
+  pivot_wider(names_from=location, values_from=frequency)
+```
+
 
 ## Interlude
 
@@ -151,7 +155,9 @@ pigs_longer %>%
   summarize(weight_mean=mean(weight))
 ```
 
-What if summary is more than one number, eg. quartiles?
+## What if summary is more than one number?
+
+eg. quartiles:
 
 ```{r, error=T}
 pigs_longer %>% 
@@ -168,20 +174,23 @@ pigs_longer %>%
   unnest(r)
 ```
 
-## or even better, use `tidy` from `broom`:
+
+## or, even better, use `enframe`:
 
 ```{r}
-tidy(quantile(pigs_longer$weight, c(0.25, 0.75)))
+quantile(pigs_longer$weight, c(0.25, 0.75))
+enframe(quantile(pigs_longer$weight, c(0.25, 0.75)))
 ```
 
-and so
 
-```{r}
+## A nice look
+
+```{r, warning=FALSE}
 pigs_longer %>% 
   group_by(feed) %>% 
-  summarize(r=list(tidy(quantile(weight, c(0.25, 0.75))))) %>% 
+  summarize(r=list(enframe(quantile(weight, c(0.25, 0.75))))) %>% 
   unnest(r) %>% 
-  pivot_wider(names_from=names, values_from=x)
+  pivot_wider(names_from=name, values_from=value)
 ```
 
 
@@ -220,9 +229,20 @@ repmes3
 ## make a graph
 
 ```{r}
-ggplot(repmes3, aes(x=fct_inorder(time), y=y, colour=treatment, group=id)) +
+ggplot(repmes3, aes(x=fct_inorder(time), y=y, 
+                    colour=treatment, group=id)) +
   geom_point() + geom_line()
 ```
+
+## or do the plot with means
+
+```{r, echo=F}
+repmes3 %>% group_by(treatment, ftime=fct_inorder(time)) %>% 
+  summarize(mean_y=mean(y)) %>% 
+  ggplot(aes(x=ftime, y=mean_y, colour=treatment, group=treatment)) + 
+    geom_point() + geom_line()
+```
+
 
 ## thank you!
 
